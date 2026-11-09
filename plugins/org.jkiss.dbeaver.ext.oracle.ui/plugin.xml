@@ -305,6 +305,22 @@
                     singleton="false">
                 <task id="oracleToolTriggerEnable"/>
             </tool>
+            <tool
+                    description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolSchedulerJobDisable.description"
+                    id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolSchedulerJobDisable"
+                    group="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance"
+                    label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolSchedulerJobDisable.label"
+                    singleton="false">
+                <task id="oracleToolSchedulerJobDisable"/>
+            </tool>
+            <tool
+                    description="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolSchedulerJobEnable.description"
+                    id="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolSchedulerJobEnable"
+                    group="org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance"
+                    label="%tool.org.jkiss.dbeaver.ext.oracle.ui.tools.maintenance.OracleToolSchedulerJobEnable.label"
+                    singleton="false">
+                <task id="oracleToolSchedulerJobEnable"/>
+            </tool>
         </tools>
     </extension>
     <extension point="org.jkiss.dbeaver.sql.executors">

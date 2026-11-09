@@ -514,7 +514,11 @@ public class OracleSchema extends OracleGlobalObject implements
                 return sequence;
             }
         }
-        return getPackageCache().getObject(monitor, this, childName);
+        OraclePackage pkg = getPackageCache().getObject(monitor, this, childName);
+        if (pkg != null) {
+            return pkg;
+        }
+        return getSchedulerJobCache().getObject(monitor, this, childName);
     }
 
     @NotNull
@@ -1754,16 +1758,25 @@ public class OracleSchema extends OracleGlobalObject implements
 
     }
 
-    public static class SchedulerJobCache extends JDBCObjectCache<OracleSchema, OracleSchedulerJob> {
+    public static class SchedulerJobCache extends JDBCObjectLookupCache<OracleSchema, OracleSchedulerJob> {
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner)
-                throws SQLException
-        {
+        public JDBCStatement prepareLookupStatement(
+            @NotNull JDBCSession session,
+            @NotNull OracleSchema owner,
+            @Nullable OracleSchedulerJob object,
+            @Nullable String objectName
+        ) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT * FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "SCHEDULER_JOBS") + " WHERE OWNER=? ORDER BY JOB_NAME");
+                "SELECT * FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "SCHEDULER_JOBS") +
+                    " WHERE OWNER=? " +
+                    (object == null && objectName == null ? "" : "AND JOB_NAME=? ") +
+                    "ORDER BY JOB_NAME");
             dbStat.setString(1, owner.getName());
+            if (object != null || objectName != null) {
+                dbStat.setString(2, object != null ? object.getName() : objectName);
+            }
             return dbStat;
         }
 

@@ -552,6 +552,14 @@
             <datasource id="oracle"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger" if="object.status == 'ENABLED'"/>
         </task>
+        <task id="oracleToolSchedulerJobEnable" name="%task.oracleToolSchedulerJobEnable.name" description="%task.oracleToolSchedulerJobEnable.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolSchedulerJobEnable">
+            <datasource id="oracle"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob" if="!object.enabled"/>
+        </task>
+        <task id="oracleToolSchedulerJobDisable" name="%task.oracleToolSchedulerJobDisable.name" description="%task.oracleToolSchedulerJobDisable.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolSchedulerJobDisable">
+            <datasource id="oracle"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob" if="object.enabled"/>
+        </task>
     </extension>
 
 </plugin>

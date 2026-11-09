@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -375,7 +375,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         this.jobClass = jobClass;
     }
 
-    @Property(category = CAT_SETTINGS, viewable = false, order = 34, updatable = true, editable = true)
+    @Property(viewable = true, order = 12, updatable = true, editable = true)
     public boolean getEnabled() {
         return enabled;
     }
@@ -664,39 +664,29 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
 
     public void refreshObjectState(@NotNull DBRProgressMonitor monitor) {
         if (monitor != null) {
-            monitor.beginTask("Load action for '" + this.getName() + "'...", 1);
+            monitor.beginTask("Refresh state for '" + this.getName() + "'...", 1);
             try (
                 final JDBCSession session = DBUtils.openMetaSession(
                     monitor,
                     this,
-                    "Load action for " + OracleObjectType.JOB + " '" + this.getName() + "'"
+                    "Refresh state for " + OracleObjectType.JOB + " '" + this.getName() + "'"
                 )
             ) {
                 try (
                     JDBCPreparedStatement dbStat = session.prepareStatement(
-                        "SELECT STATE FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_SCHEDULER_JOBS " +
+                        "SELECT STATE, ENABLED FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_SCHEDULER_JOBS " +
                             "WHERE OWNER=? AND JOB_NAME=? ")
                 ) {
                     dbStat.setString(1, getOwner());
                     dbStat.setString(2, getName());
                     dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                        StringBuilder jobState = null;
-                        int lineCount = 0;
-                        while (dbResult.next()) {
+                        if (dbResult.next()) {
                             if (monitor.isCanceled()) {
-                                break;
+                                return;
                             }
-                            final String line = dbResult.getString(1);
-                            if (jobState == null) {
-                                jobState = new StringBuilder(15);
-                            }
-                            jobState.append(line);
-                            lineCount++;
-                            monitor.subTask("Line " + lineCount);
-                        }
-                        if (jobState != null) {
-                            state = jobState.toString();
+                            state = JDBCUtils.safeGetString(dbResult, "STATE");
+                            enabled = JDBCUtils.safeGetBoolean(dbResult, "ENABLED");
                         }
                     }
                 }
@@ -815,11 +805,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
     @Nullable
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        OracleSchema schema = getSchema();
-        if (schema != null) {
-            schema.getSchedulerJobCache().removeObject(this, false);
-        }
-        return this;
+        return getSchema().getSchedulerJobCache().refreshObject(monitor, getSchema(), this);
     }
 
     public static class OracleSchedulerJobModifyValueValidator implements IPropertyValueValidator<OracleSchedulerJob, Object> {
