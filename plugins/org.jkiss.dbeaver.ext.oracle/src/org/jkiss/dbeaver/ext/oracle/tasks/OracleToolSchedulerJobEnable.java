@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.oracle.tasks;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -42,13 +41,9 @@ public class OracleToolSchedulerJobEnable extends SQLToolExecuteHandler<OracleSc
         List<DBEPersistAction> queries,
         OracleSchedulerJob object
     ) throws DBCException {
-        // Always quote owner/job like Oracle SQL Developer (DBMS_SCHEDULER name parameter).
         // END; is required for execution (getScript is run as-is). generateScript() may show END;; in preview.
-        String jobName = DBUtils.getQuotedIdentifier(object.getDataSource(), object.getSchema().getName(), true, true)
-            + "."
-            + DBUtils.getQuotedIdentifier(object.getDataSource(), object.getName(), true, true);
         String sql = "BEGIN\n" +
-            "  DBMS_SCHEDULER.ENABLE(name=>'" + jobName + "');\n" +
+            "  DBMS_SCHEDULER.ENABLE(name=>" + OracleToolSchedulerJobUtils.getJobNameLiteral(object) + ");\n" +
             "END;";
         queries.add(new SQLDatabasePersistAction(sql));
     }

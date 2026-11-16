@@ -2015,6 +2015,27 @@ public class OracleSchema extends OracleGlobalObject implements
             return dbStat;
         }
 
+        /**
+         * Always reload a single job row and copy into the existing instance.
+         * {@link JDBCObjectLookupCache#refreshObject} falls back to {@code loadObjects()} when the
+         * cache is not fully loaded; that merge keeps the old instance and drops freshly fetched
+         * fields such as ENABLED (common for jobs obtained via findObject/getChild / saved tasks).
+         */
+        @Override
+        public OracleSchedulerJob refreshObject(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull OracleSchema owner,
+            @NotNull OracleSchedulerJob oldObject
+        ) throws DBException {
+            OracleSchedulerJob reloaded = reloadObject(monitor, owner, oldObject, null);
+            if (reloaded != null) {
+                deepCopyCachedObject(reloaded, oldObject);
+            } else {
+                removeObject(oldObject, false);
+            }
+            return oldObject;
+        }
+
         @Override
         protected OracleSchedulerJob fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
                 throws SQLException, DBException

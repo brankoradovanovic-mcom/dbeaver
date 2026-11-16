@@ -375,7 +375,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         this.jobClass = jobClass;
     }
 
-    @Property(viewable = true, order = 12, updatable = true, editable = true)
+    @Property(category = CAT_SETTINGS, viewable = true, order = 34, updatable = true, editable = true)
     public boolean getEnabled() {
         return enabled;
     }
